@@ -85,7 +85,7 @@ extension WKInterfaceImage: Nuke_ImageDisplaying {
 /// request is finished. Gets called synchronously if the response was found in
 /// the memory cache. `nil` by default.
 /// - returns: An image task or `nil` if the image was found in the memory cache.
-@discardableResult
+@discardableResult @inlinable
 public func loadImage(with url: URL,
                       options: ImageLoadingOptions = ImageLoadingOptions.shared,
                       into view: ImageDisplayingView,
@@ -113,7 +113,7 @@ public func loadImage(with url: URL,
 /// request is finished. Gets called synchronously if the response was found in
 /// the memory cache. `nil` by default.
 /// - returns: An image task or `nil` if the image was found in the memory cache.
-@discardableResult
+@discardableResult @inlinable
 public func loadImage(with request: ImageRequest,
                       options: ImageLoadingOptions = ImageLoadingOptions.shared,
                       into view: ImageDisplayingView,
@@ -125,6 +125,7 @@ public func loadImage(with request: ImageRequest,
 }
 
 /// Cancels an outstanding request associated with the view.
+@inlinable
 public func cancelRequest(for view: ImageDisplayingView) {
     assert(Thread.isMainThread)
     ImageViewController.controller(for: view).cancelOutstandingTask()
@@ -298,7 +299,8 @@ public struct ImageLoadingOptions {
 /// - note: With a few modifications this might become public at some point,
 /// however as it stands today `ImageViewController` is just a helper class,
 /// making it public wouldn't expose any additional functionality to the users.
-private final class ImageViewController {
+@usableFromInline
+final class ImageViewController {
     // Ideally should be `unowned` but can't because of the Swift bug
     // https://bugs.swift.org/browse/SR-7369
     private weak var imageView: ImageDisplayingView?
@@ -318,6 +320,7 @@ private final class ImageViewController {
     static var controllerAK = "ImageViewController.AssociatedKey"
 
     // Lazily create a controller for a given view and associate it with a view.
+    @usableFromInline
     static func controller(for view: ImageDisplayingView) -> ImageViewController {
         if let controller = objc_getAssociatedObject(view, &ImageViewController.controllerAK) as? ImageViewController {
             return controller
@@ -329,6 +332,7 @@ private final class ImageViewController {
 
     // MARK: - Loading Images
 
+    @usableFromInline
     func loadImage(with request: ImageRequest,
                    options: ImageLoadingOptions,
                    progress progressHandler: ImageTask.ProgressHandler? = nil,
@@ -390,6 +394,7 @@ private final class ImageViewController {
         return task
     }
 
+    @usableFromInline
     func cancelOutstandingTask() {
         task?.cancel() // The pipeline guarantees no callbacks to be deliver after cancellation
         task = nil

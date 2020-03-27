@@ -23,7 +23,7 @@ class ImageViewPerformanceTests: XCTestCase {
     func testImageViewMainThreadPerformance() {
         let view = _ImageView()
 
-        let urls = (0..<20_000).map { _ in return URL(string: "http://test.com/1)")! }
+        let urls = (0..<100_000).map { _ in return URL(string: "http://test.com/1)")! }
 
         measure {
             for url in urls {

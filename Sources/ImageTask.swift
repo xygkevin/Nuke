@@ -55,7 +55,7 @@ public /* final */ class ImageTask: Hashable, CustomStringConvertible {
         return _isCancelled
     }
     private(set) var _isCancelled = false
-    private let lock: NSLock?
+    @usableFromInline let lock: NSLock?
 
     let queue: DispatchQueue?
 
@@ -80,6 +80,7 @@ public /* final */ class ImageTask: Hashable, CustomStringConvertible {
     /// The pipeline will immediately cancel any work associated with a task
     /// unless there is an equivalent outstanding task running (see
     /// `ImagePipeline.Configuration.isDeduplicationEnabled` for more info).
+    @inlinable
     public func cancel() {
         if let lock = lock {
             lock.lock()
@@ -91,7 +92,8 @@ public /* final */ class ImageTask: Hashable, CustomStringConvertible {
         }
     }
 
-    private func _cancel() {
+    @usableFromInline
+    func _cancel() {
         if !_isCancelled {
             _isCancelled = true
             pipeline?.imageTaskCancelCalled(self)
@@ -109,10 +111,12 @@ public /* final */ class ImageTask: Hashable, CustomStringConvertible {
 
     // MARK: - Hashable
 
+    @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(self).hashValue)
     }
 
+    @inlinable
     public static func == (lhs: ImageTask, rhs: ImageTask) -> Bool {
         return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
     }

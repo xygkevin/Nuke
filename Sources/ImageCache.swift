@@ -51,7 +51,8 @@ public extension ImageCaching {
 /// memory warning. It also automatically removes *most* of cached elements
 /// when the app enters background.
 public final class ImageCache: ImageCaching {
-    private let impl: Cache<ImageRequest.CacheKey, ImageResponse>
+    @usableFromInline
+    let impl: Cache<ImageRequest.CacheKey, ImageResponse>
 
     /// The maximum total cost that the cache can hold.
     public var costLimit: Int {
@@ -103,37 +104,45 @@ public final class ImageCache: ImageCaching {
     }
 
     /// Returns the `ImageResponse` stored in the cache with the given request.
+    @inlinable
     public func cachedResponse(for request: ImageRequest) -> ImageResponse? {
         return impl.value(forKey: request.makeCacheKeyForFinalImage())
     }
 
     /// Stores the given `ImageResponse` in the cache using the given request.
+    @inlinable
     public func storeResponse(_ response: ImageResponse, for request: ImageRequest) {
         impl.set(response, forKey: request.makeCacheKeyForFinalImage(), cost: self.cost(for: response.image))
     }
 
     /// Removes response stored with the given request.
+    @inlinable
     public func removeResponse(for request: ImageRequest) {
         impl.removeValue(forKey: request.makeCacheKeyForFinalImage())
     }
 
     /// Removes all cached images.
+    @inlinable
     public func removeAll() {
         impl.removeAll()
     }
+
     /// Removes least recently used items from the cache until the total cost
     /// of the remaining items is less than the given cost limit.
+    @inlinable
     public func trim(toCost limit: Int) {
         impl.trim(toCost: limit)
     }
 
     /// Removes least recently used items from the cache until the total count
     /// of the remaining items is less than the given count limit.
+    @inlinable
     public func trim(toCount limit: Int) {
         impl.trim(toCount: limit)
     }
 
     /// Returns cost for the given image by approximating its bitmap size in bytes in memory.
+    @usableFromInline
     func cost(for image: PlatformImage) -> Int {
         let dataCost: Int
         if ImagePipeline.Configuration.isAnimatedImageDataEnabled {
@@ -152,6 +161,7 @@ public final class ImageCache: ImageCaching {
     }
 }
 
+@usableFromInline
 final class Cache<Key: Hashable, Value> {
     // Can't use `NSCache` because it is not LRU
 
@@ -194,6 +204,7 @@ final class Cache<Key: Hashable, Value> {
         #endif
     }
 
+    @usableFromInline
     func value(forKey key: Key) -> Value? {
         lock.lock(); defer { lock.unlock() }
 
@@ -213,6 +224,7 @@ final class Cache<Key: Hashable, Value> {
         return node.value.value
     }
 
+    @usableFromInline
     func set(_ value: Value, forKey key: Key, cost: Int = 0, ttl: TimeInterval? = nil) {
         lock.lock(); defer { lock.unlock() }
 
@@ -223,7 +235,7 @@ final class Cache<Key: Hashable, Value> {
         _trim() // _trim is extremely fast, it's OK to call it each time
     }
 
-    @discardableResult
+    @discardableResult @usableFromInline
     func removeValue(forKey key: Key) -> Value? {
         lock.lock(); defer { lock.unlock() }
 
@@ -248,7 +260,7 @@ final class Cache<Key: Hashable, Value> {
         totalCost -= node.value.cost
     }
 
-    @objc
+    @objc @usableFromInline
     dynamic func removeAll() {
         lock.sync {
             map.removeAll()
@@ -274,6 +286,7 @@ final class Cache<Key: Hashable, Value> {
         }
     }
 
+    @usableFromInline
     func trim(toCost limit: Int) {
         lock.sync { _trim(toCost: limit) }
     }
@@ -282,6 +295,7 @@ final class Cache<Key: Hashable, Value> {
         _trim(while: { totalCost > limit })
     }
 
+    @usableFromInline
     func trim(toCount limit: Int) {
         lock.sync { _trim(toCount: limit) }
     }

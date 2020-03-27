@@ -12,6 +12,7 @@ public struct ImageRequest: CustomStringConvertible {
     // MARK: Parameters of the Request
 
     /// The `URLRequest` used for loading an image.
+    @inlinable
     public var urlRequest: URLRequest {
         get { return ref.resource.urlRequest }
         set {
@@ -44,18 +45,21 @@ public struct ImageRequest: CustomStringConvertible {
 
     /// The relative priority of the operation. The priority affects the order in which the image
     /// requests are executed.`.normal` by default.
+    @inlinable
     public var priority: Priority {
         get { return ref.priority }
         set { mutate { $0.priority = newValue } }
     }
 
     /// The request options. See `ImageRequestOptions` for more info.
+    @inlinable
     public var options: ImageRequestOptions {
         get { return ref.options }
         set { mutate { $0.options = newValue } }
     }
 
     /// Processor to be applied to the image. `nil` by default.
+    @inlinable
     public var processors: [ImageProcessing] {
         get { return ref.processors }
         set { mutate { $0.processors = newValue } }
@@ -78,6 +82,7 @@ public struct ImageRequest: CustomStringConvertible {
     ///     priority: .high
     /// )
     /// ```
+    @inlinable
     public init(url: URL,
                 processors: [ImageProcessing] = [],
                 priority: ImageRequest.Priority = .normal,
@@ -103,6 +108,7 @@ public struct ImageRequest: CustomStringConvertible {
     ///     priority: .high
     /// )
     /// ```
+    @inlinable
     public init(urlRequest: URLRequest,
                 processors: [ImageProcessing] = [],
                 priority: ImageRequest.Priority = .normal,
@@ -113,9 +119,11 @@ public struct ImageRequest: CustomStringConvertible {
 
     // CoW:
 
-    private var ref: Container
+    @usableFromInline
+    var ref: Container
 
-    private mutating func mutate(_ closure: (Container) -> Void) {
+    @usableFromInline
+    mutating func mutate(_ closure: (Container) -> Void) {
         if !isKnownUniquelyReferenced(&ref) {
             ref = Container(container: ref)
         }
@@ -124,14 +132,16 @@ public struct ImageRequest: CustomStringConvertible {
 
     /// Just like many Swift built-in types, `ImageRequest` uses CoW approach to
     /// avoid memberwise retain/releases when `ImageRequest` is passed around.
-    private class Container {
-        var resource: Resource
-        var urlString: String? // memoized absoluteString
-        var priority: ImageRequest.Priority
-        var options: ImageRequestOptions
-        var processors: [ImageProcessing]
+    @usableFromInline
+    final class Container {
+        @usableFromInline var resource: Resource
+        @usableFromInline var urlString: String? // memoized absoluteString
+        @usableFromInline var priority: ImageRequest.Priority
+        @usableFromInline var options: ImageRequestOptions
+        @usableFromInline var processors: [ImageProcessing]
 
         /// Creates a resource with a default processor.
+        @usableFromInline
         init(resource: Resource, processors: [ImageProcessing], priority: Priority, options: ImageRequestOptions) {
             self.resource = resource
             self.priority = priority
@@ -154,10 +164,12 @@ public struct ImageRequest: CustomStringConvertible {
     }
 
     /// Resource representation (either URL or URLRequest).
-    private enum Resource: CustomStringConvertible {
+    @usableFromInline
+    enum Resource: CustomStringConvertible {
         case url(URL)
         case urlRequest(URLRequest)
 
+        @usableFromInline
         var urlRequest: URLRequest {
             switch self {
             case let .url(url): return URLRequest(url: url) // create lazily
@@ -165,6 +177,7 @@ public struct ImageRequest: CustomStringConvertible {
             }
         }
 
+        @usableFromInline
         var description: String {
             switch self {
             case let .url(url):
@@ -263,6 +276,7 @@ extension ImageRequest {
     // MARK: - Cache Keys
 
     /// A key for processed image in memory cache.
+    @usableFromInline
     func makeCacheKeyForFinalImage() -> ImageRequest.CacheKey {
         return CacheKey(request: self)
     }
@@ -298,9 +312,11 @@ extension ImageRequest {
     // MARK: - Internals (Keys)
 
     // Uniquely identifies a cache processed image.
+    @usableFromInline
     struct CacheKey: Hashable {
         let request: ImageRequest
 
+        @usableFromInline
         func hash(into hasher: inout Hasher) {
             if let customKey = request.ref.options.cacheKey {
                 hasher.combine(customKey)
@@ -309,6 +325,7 @@ extension ImageRequest {
             }
         }
 
+        @usableFromInline
         static func == (lhs: CacheKey, rhs: CacheKey) -> Bool {
             let lhs = lhs.request.ref, rhs = rhs.request.ref
             if lhs.options.cacheKey != nil || rhs.options.cacheKey != nil {

@@ -110,7 +110,7 @@ public /* final */ class ImagePipeline {
     /// when the progress is updated. `nil` by default.
     /// - parameter completion: A closure to be called on the main thread when the
     /// request is finished. `nil` by default.
-    @discardableResult
+    @discardableResult @inlinable
     public func loadImage(with url: URL,
                           queue: DispatchQueue? = nil,
                           progress: ImageTask.ProgressHandler? = nil,
