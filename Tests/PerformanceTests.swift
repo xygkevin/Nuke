@@ -96,6 +96,22 @@ class ImagePipelinePerfomanceTests: XCTestCase {
     }
 }
 
+class ImageRequestPerformanceTests: XCTestCase {
+    func testImageRequestMutatePerformance() {
+        let url = URL(string: "http://test.com/image.jpeg")!
+
+        measure {
+            for _ in 0...100_000 {
+                var request = ImageRequest(url: url)
+                request.processors = [ImageProcessor.Circle()]
+                request.options.filteredURL = "123"
+                request.priority = .high
+                request.options.memoryCacheOptions.isReadAllowed = false
+            }
+        }
+    }
+}
+
 class ImageCachePerformanceTests: XCTestCase {
     func testCacheWrite() {
         let cache = ImageCache()
